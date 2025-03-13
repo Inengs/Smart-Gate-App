@@ -57,6 +57,18 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="SettingsScreen"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color }) => (
+            Platform.OS === 'ios' ?
+              <IconSymbol size={28} name="gear" color={color} /> :
+              <MaterialCommunityIcons name="cog" size={24} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
