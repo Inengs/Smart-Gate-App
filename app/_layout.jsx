@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../src/firebaseConfig';
 import { ActivityIndicator, View } from 'react-native';
 import { Provider as PaperProvider } from 'react-native-paper';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
 export default function RootLayout() {
@@ -29,20 +30,38 @@ export default function RootLayout() {
   }
 
   return (
-    <PaperProvider>
-      <Stack>
-        {user ? (
-          <Stack.Screen
-            name="(tabs)"
-            options={{ headerShown: false, gestureEnabled: false }}
-          />
-        ) : (
-          <Stack.Screen
-            name="login"
-            options={{ headerShown: false, gestureEnabled: false }}
-          />
-        )}
-      </Stack>
-    </PaperProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <PaperProvider>
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} /> {/* Landing page */}
+          <Stack.Screen name="login" options={{ headerShown: false, gestureEnabled: false }} />
+          {user && (
+            <Stack.Screen
+              name="(tabs)"
+              options={{ headerShown: false, gestureEnabled: false }}
+            />
+          )}
+        </Stack>
+      </PaperProvider>
+    </GestureHandlerRootView>
   );
 }
+
+
+{/* <GestureHandlerRootView style={{ flex: 1 }}>
+<PaperProvider>
+  <Stack>
+    {user ? (
+      <Stack.Screen
+        name="(tabs)"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+    ) : (
+      <Stack.Screen
+        name="login"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+    )}
+  </Stack>
+</PaperProvider>
+</GestureHandlerRootView> */}

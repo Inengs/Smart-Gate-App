@@ -15,7 +15,7 @@ const firebaseConfig = {
     appId: "1:742973975598:web:ef93053324fe55c96303bf",
     measurementId: "G-7HM55WLNST",
     // Add this line if you're using Realtime Database
-    databaseURL: "https://smart-gate-app-landmark-uni-default-rtdb.firebaseio.com"
+    databaseURL: "https://smart-gate-app-landmark-uni-default-rtdb.europe-west1.firebasedatabase.app/" // "https://smart-gate-app-landmark-uni-default-rtdb.firebaseio.com"
 };
 
 // Initialize Firebase
@@ -25,6 +25,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
 const firestore = getFirestore(app);
+
+console.log("Firebase database initialized", database)
 
 // Export the services
 export { app, auth, database, firestore };

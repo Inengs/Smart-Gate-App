@@ -17,6 +17,7 @@ export default function LogsScreen() {
 
     const fetchLogs = async () => {
         setLoading(true);
+        console.log("Starting to fetch logs")
         try {
             const logsRef = query(
                 ref(database, 'logs'),
@@ -24,7 +25,9 @@ export default function LogsScreen() {
                 limitToLast(100)
             );
 
+            console.log("Logs reference created: ", logsRef)
             const snapshot = await get(logsRef);
+            console.log("Got snapshot, exists:", snapshot.exists());
 
             if (snapshot.exists()) {
                 const logsData = [];
@@ -35,6 +38,7 @@ export default function LogsScreen() {
                     });
                 });
 
+                console.log("Logs data before sort:", logsData)
                 // Sort logs in descending order (newest first)
                 setLogs(logsData.reverse());
             } else {
@@ -250,7 +254,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#FFFFFF',
+        color: '#333',
     },
     container: {
         flex: 1,
