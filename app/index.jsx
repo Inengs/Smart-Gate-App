@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Image, Animated } from 'react-native';
 import { PanGestureHandler } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 import { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
-import { transform } from "@babel/core";
 
 export default function LandingScreen() {
     const router = useRouter();
