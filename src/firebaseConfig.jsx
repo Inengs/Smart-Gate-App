@@ -39,11 +39,3 @@ export { app, auth, database, firestore };
 
 
 
-
-
-
-
-
-
-
-
