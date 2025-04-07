@@ -1,0 +1,153 @@
+{
+  "gates": {
+    "main-gate": {
+      "command": {
+        "action": "open",
+        "timestamp": 1742677586426,
+        "triggeredBy": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+      },
+      "status": "closed"
+    }
+  },
+  "licensePlates": {
+    "INHIEKBJE": {
+      "plateNumber": "INHIEKBJE",
+      "ownerName": "Inengs",
+      "allowed": true,
+      "createdAt": 1742507097062,
+      "updatedAt": 1742507097062,
+      "ownerUid": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "HAHJSOSKSNDNMD": {
+      "plateNumber": "HAHJSOSKSNDNMD",
+      "ownerName": "Grizz",
+      "allowed": true,
+      "createdAt": 1742512511567,
+      "updatedAt": 1742512511567,
+      "ownerUid": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    }
+  },
+  "logs": {
+    "1742513928968": {
+      "plate": "manual",
+      "action": "Gate open",
+      "success": true,
+      "timestamp": 1742513928968,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "1742513931717": {
+      "plate": "manual",
+      "action": "Gate close",
+      "success": true,
+      "timestamp": 1742513931717,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "1742676379801": {
+      "plate": "manual",
+      "action": "Gate open",
+      "success": true,
+      "timestamp": 1742676379801,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "1742676381451": {
+      "plate": "manual",
+      "action": "Gate close",
+      "success": true,
+      "timestamp": 1742676381451,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "1742676384827": {
+      "plate": "manual",
+      "action": "Gate open",
+      "success": true,
+      "timestamp": 1742676384828,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "1742677100106": {
+      "plate": "manual",
+      "action": "Gate open",
+      "success": true,
+      "timestamp": 1742677100106,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "1742677105053": {
+      "plate": "manual",
+      "action": "Gate close",
+      "success": true,
+      "timestamp": 1742677105053,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "1742677228805": {
+      "plate": "manual",
+      "action": "Gate open",
+      "success": true,
+      "timestamp": 1742677228806,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "1742677339374": {
+      "plate": "manual",
+      "action": "Gate open",
+      "success": true,
+      "timestamp": 1742677339374,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "1742677347728": {
+      "plate": "manual",
+      "action": "Gate close",
+      "success": true,
+      "timestamp": 1742677347728,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "1742677353644": {
+      "plate": "manual",
+      "action": "Gate open",
+      "success": true,
+      "timestamp": 1742677353644,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "1742677388494": {
+      "plate": "manual",
+      "action": "Gate close",
+      "success": true,
+      "timestamp": 1742677388495,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "1742677586425": {
+      "plate": "manual",
+      "action": "Gate open",
+      "success": true,
+      "timestamp": 1742677586426,
+      "userId": "XCgM8qwWaDatdVtpaPGiLdrJENR2"
+    },
+    "log1": {
+      "plate": "unknown",
+      "action": "Gate Opened",
+      "timestamp": 1710460800000,
+      "userId": "unknown-uid-test@example.com"
+    },
+    "log2": {
+      "plate": "unknown",
+      "action": "Gate Closed",
+      "timestamp": 1710460900000,
+      "userId": "unknown-uid-test2@example.com"
+    },
+    "log3": {
+      "plate": "unknown",
+      "action": "Gate Opened",
+      "timestamp": 1710461000000,
+      "userId": "unknown-uid-test@example.com"
+    }
+  },
+  "users": {
+    "XCgM8qwWaDatdVtpaPGiLdrJENR2": {
+      "createdAt": 1741953139847,
+      "email": "inengiyeemmanuel@gmail.com",
+      "name": "Inengiye Emmanuel",
+      "preferences": {
+        "darkMode": true,
+        "notifications": true
+      },
+      "role": "user"
+    }
+  }
+}

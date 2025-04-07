@@ -28,28 +28,25 @@ export default function LicensePlateScreen() {
         }
 
         const licensePlatesRef = query(ref(database, 'licensePlates'), orderByChild('plateNumber'));
-        const unsubscribe = onValue(
-            licensePlatesRef,
-            (snapshot) => {
-                setLoading(true);
-                const platesData = [];
-                if (snapshot.exists()) {
-                    snapshot.forEach((childSnapshot) => {
-                        platesData.push({
-                            id: childSnapshot.key,
-                            ...childSnapshot.val(),
-                        });
-                    });
-                }
-                setLicensePlates(platesData);
-                setLoading(false);
-            },
-            (error) => {
-                console.error("Error fetching license plates:", error);
-                setLoading(false);
-                Alert.alert("Error", `Failed to load license plates: ${error.message}`);
+        const unsubscribe = onValue(licensePlatesRef, (snapshot) => {
+            console.log("Listener triggered at:", new Date().toISOString());
+            console.log("Snapshot exists:", snapshot.exists());
+            console.log("Raw data:", snapshot.val());
+            setLoading(true);
+            const platesData = [];
+            if (snapshot.exists()) {
+                snapshot.forEach((childSnapshot) => {
+                    platesData.push({ id: childSnapshot.key, ...childSnapshot.val() });
+                });
             }
-        );
+            console.log("Processed plates:", platesData);
+            setLicensePlates(platesData);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching license plates:", error);
+            setLoading(false);
+            Alert.alert("Error", `Failed to load license plates: ${error.message}`);
+        });
 
         return () => unsubscribe();
     }, []);
@@ -58,6 +55,8 @@ export default function LicensePlateScreen() {
         plate.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
         plate.ownerName.toLowerCase().includes(searchQuery.toLowerCase())
     );
+    console.log("searchQuery:", searchQuery);
+    console.log("filteredPlates:", filteredPlates);
 
     const saveLicensePlate = async () => {
         if (operationLoading) return;
@@ -79,23 +78,23 @@ export default function LicensePlateScreen() {
 
         setOperationLoading(true);
         try {
-            const plateId = isEditing ? currentPlateId : Date.now().toString();
+            const plateId = isEditing ? currentPlateId : normalizedPlate; // Use plate number as ID for simplicity
+            console.log("Saving Plate:", { plateId, normalizedPlate, ownerName });
             const existingPlateData = licensePlates.find(p => p.id === plateId);
 
             await set(ref(database, `licensePlates/${plateId}`), {
                 plateNumber: normalizedPlate,
                 ownerName: ownerName.trim(),
+                allowed: true, // Default to allowed for ANPR
                 createdAt: isEditing ? (existingPlateData?.createdAt || Date.now()) : Date.now(),
                 updatedAt: Date.now(),
                 ownerUid: auth.currentUser.uid,
             });
 
+            console.log("Plate Saved Successfully")
             resetForm();
             setDialogVisible(false);
-            Alert.alert(
-                isEditing ? "Plate Updated" : "Plate Added",
-                `License plate ${normalizedPlate} has been ${isEditing ? 'updated' : 'added'} successfully`
-            );
+            Alert.alert(isEditing ? "Plate Updated" : "Plate Added", `License plate ${normalizedPlate} has been ${isEditing ? 'updated' : 'added'}`);
         } catch (error) {
             console.error("Error saving license plate:", error);
             Alert.alert("Error", `Failed to ${isEditing ? 'update' : 'add'} license plate: ${error.message}`);
@@ -170,22 +169,12 @@ export default function LicensePlateScreen() {
         <>
             <List.Item
                 title={item.plateNumber}
-                description={item.ownerName}
+                description={`${item.ownerName} ${item.allowed ? '(Allowed)' : '(Not Allowed)'}`}
                 left={props => <List.Icon {...props} icon="car" />}
                 right={props => (
                     <View style={styles.plateActions}>
-                        <IconButton
-                            {...props}
-                            icon="pencil"
-                            onPress={() => editLicensePlate(item)}
-                            disabled={operationLoading}
-                        />
-                        <IconButton
-                            {...props}
-                            icon="delete"
-                            onPress={() => deleteLicensePlate(item.id, item.plateNumber)}
-                            disabled={operationLoading}
-                        />
+                        <IconButton {...props} icon="pencil" onPress={() => editLicensePlate(item)} disabled={operationLoading} />
+                        <IconButton {...props} icon="delete" onPress={() => deleteLicensePlate(item.id, item.plateNumber)} disabled={operationLoading} />
                     </View>
                 )}
             />

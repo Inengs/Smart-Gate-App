@@ -21,24 +21,13 @@ const HomeScreen = () => {
   const fetchRecentLogs = async () => {
     setLogsLoading(true);
     try {
-      const logsRef = query(
-        ref(database, 'logs'),
-        orderByChild('timestamp'),
-        limitToLast(10),
-      );
-
+      const logsRef = query(ref(database, 'logs'), orderByChild('timestamp'), limitToLast(10));
       const snapshot = await get(logsRef);
-
       if (snapshot.exists()) {
         const logsData = [];
         snapshot.forEach((childSnapshot) => {
-          logsData.push({
-            id: childSnapshot.key,
-            ...childSnapshot.val()
-          });
+          logsData.push({ id: childSnapshot.key, ...childSnapshot.val() });
         });
-
-        // sort logs in descending order (newest first)
         setRecentLogs(logsData.reverse());
       } else {
         setRecentLogs([]);
@@ -48,62 +37,57 @@ const HomeScreen = () => {
     } finally {
       setLogsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) {
-        router.replace('/LoginScreen')
-      } else {
-        setUser(currentUser)
-      }
-    })
-    const gateStatusRef = ref(database, 'gates/main-gate/status');
-    const gateUnsubscribe = onValue(gateStatusRef, (snapshot) => {
-      if (snapshot.exists()) {
-        setGateStatus(snapshot.val());
-      }
+      if (!currentUser) router.replace('/login');
+      else setUser(currentUser);
     });
 
-    // Fetch recent logs when component mounts
-    fetchRecentLogs();
+    const gateStatusRef = ref(database, 'gates/main-gate/status');
+    const gateUnsubscribe = onValue(gateStatusRef, (snapshot) => {
+      setGateStatus(snapshot.val() || 'closed');
+    });
 
-    return () => { unsubscribe(); gateUnsubscribe(); }
+    fetchRecentLogs();
+    return () => {
+      unsubscribe();
+      gateUnsubscribe();
+    };
   }, []);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    fetchRecentLogs()
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+    fetchRecentLogs().then(() => setRefreshing(false));
   }, []);
 
-  const controlGate = async (command) => {
+  const controlGate = async (action) => {
     setLoading(true);
-
     try {
-      // Send command to the gate
-      await set(ref(database, 'gates/main-gate/command'), command);
-      setGateStatus(command.toLowerCase() === 'open' ? 'opening' : 'closing')
-
-      // Log the gate operation
-      const newLogRef = ref(database, `logs/${Date.now()}`);
-      await set(newLogRef, {
-        action: `Gate ${command.toLowerCase()}`,
-        userId: user?.email || 'unknown',
-        timestamp: Date.now(),
-        success: true
+      const commandRef = ref(database, 'gates/main-gate/command');
+      const timestamp = Date.now();
+      await set(commandRef, {
+        action: action.toLowerCase(),
+        timestamp,
+        triggeredBy: user?.uid || 'unknown',
       });
 
-      // simulating a status change after a delay (this simulated a real app that can listen for status updates)
-      setTimeout(() => {
-        setGateStatus(command.toLowerCase() === 'open' ? 'open' : 'closed')
-        // Refresh logs to show the new entry
-        fetchRecentLogs();
-      }, 2000);
+      setGateStatus(action.toLowerCase() === 'open' ? 'opening' : 'closing');
+
+      const logRef = ref(database, `logs/${timestamp}`);
+      await set(logRef, {
+        plate: 'manual',
+        action: `Gate ${action.toLowerCase()}`,
+        timestamp,
+        userId: user?.email || 'unknown',
+        success: true,
+      });
+
+      // Raspberry Pi will update status; this is just for UI feedback
+      setTimeout(() => fetchRecentLogs(), 2000);
     } catch (error) {
-      console.error("Error controlling gate: ", error);
+      console.error("Error controlling gate:", error);
       alert("Failed to control gate");
     } finally {
       setLoading(false);
@@ -113,34 +97,32 @@ const HomeScreen = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      // No need to navigate - _layout.jsx will handle this based on auth state
     } catch (error) {
       alert("Error signing out: " + error.message);
     }
   };
 
-  const formatTimeStamp = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleString();
-  }
+  const formatTimestamp = (timestamp) => new Date(timestamp).toLocaleString();
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Smart Gate Dashboard</Text>
-        <Button mode="text" onPress={handleLogout} style={styles.logoutButton}>Logout</Button>
+        <Button mode="text" onPress={handleLogout}>Logout</Button>
       </View>
-
-      <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        {/* <View style={styles.container}> */}
-
+      <ScrollView
+        style={styles.container}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         <Card style={styles.statusCard}>
           <Card.Content>
             <Text style={styles.statusTitle}>Gate Status</Text>
-            <Text style={[
-              styles.statusValue,
-              gateStatus === 'open' ? styles.statusOpen : gateStatus === 'closed' ? styles.statusClosed : styles.statusTransitioning
-            ]}>
+            <Text
+              style={[
+                styles.statusValue,
+                gateStatus === 'open' ? styles.statusOpen : gateStatus === 'closed' ? styles.statusClosed : styles.statusTransitioning,
+              ]}
+            >
               {gateStatus.toUpperCase()}
             </Text>
           </Card.Content>
@@ -156,7 +138,6 @@ const HomeScreen = () => {
           >
             Open Gate
           </Button>
-
           <Button
             mode="contained"
             onPress={() => controlGate('CLOSE')}
@@ -172,26 +153,22 @@ const HomeScreen = () => {
           <Card.Title title="Recent Activity" />
           <Card.Content>
             {logsLoading ? (
-              <ActivityIndicator size={'small'} style={styles.logsLoading} />
+              <ActivityIndicator size="small" style={styles.logsLoading} />
             ) : recentLogs.length > 0 ? (
               recentLogs.map((log) => (
                 <List.Item
                   key={log.id}
-                  title={log.action}
-                  description={formatTimeStamp(log.timestamp)}
-                  left={props => (
+                  title={`${log.plate ? `${log.plate} - ` : ''}${log.action}`}
+                  description={formatTimestamp(log.timestamp)}
+                  left={(props) => (
                     <Avatar.Icon
                       {...props}
                       size={40}
-                      icon={log.action.includes('open') ? "door-open" : "door-closed"}
+                      icon={log.action.includes('open') ? 'door-open' : 'door-closed'}
                       style={{ backgroundColor: log.action.includes('open') ? '#4CAF50' : '#F44336' }}
                     />
                   )}
-                  right={props => (
-                    <Text {...props} style={styles.logUser}>
-                      {log.userId?.split('@')[0] || 'unknown'}
-                    </Text>
-                  )}
+                  right={(props) => <Text {...props} style={styles.logUser}>{log.userId?.split('@')[0] || 'unknown'}</Text>}
                 />
               ))
             ) : (
@@ -283,4 +260,3 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
-
