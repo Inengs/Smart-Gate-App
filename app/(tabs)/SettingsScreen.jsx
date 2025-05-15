@@ -6,8 +6,12 @@ import { ref, get, update } from 'firebase/database';
 import { updateProfile, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider, signOut } from 'firebase/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import Header from '../../components/ui/header';
+import { Colors } from '../../constants/Colors';
+import { useColorScheme } from '../../hooks/useColorScheme';
 
 export default function SettingsScreen() {
+    const colorScheme = useColorScheme();
     const [user, setUser] = useState(auth.currentUser);
     const [loading, setLoading] = useState(false);
     const [profileLoading, setProfileLoading] = useState(false);
@@ -24,6 +28,85 @@ export default function SettingsScreen() {
     const [confirmPassword, setConfirmPassword] = useState('');
 
     const router = useRouter();
+
+    const styles = StyleSheet.create({
+        safeArea: {
+            flex: 1,
+            backgroundColor: Colors.light.background,
+        },
+        container: {
+            flex: 1,
+            padding: 16,
+            backgroundColor: Colors.light.background,
+        },
+        card: {
+            marginBottom: 16,
+            elevation: 2,
+        },
+        profileHeader: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 16,
+        },
+        profileInfo: {
+            marginLeft: 16,
+            flex: 1,
+        },
+        profileName: {
+            fontSize: 18,
+            fontWeight: 'bold',
+        },
+        profileEmail: {
+            fontSize: 14,
+            color: '#666',
+        },
+        profileRole: {
+            fontSize: 14,
+            color: '#2196F3',
+            fontWeight: '500',
+        },
+        divider: {
+            marginVertical: 12,
+        },
+        input: {
+            marginBottom: 12,
+        },
+        buttonRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginTop: 8,
+        },
+        cancelButton: {
+            marginRight: 12,
+        },
+        saveButton: {
+            marginTop: 16,
+        },
+        logoutButton: {
+            backgroundColor: '#F44336',
+        },
+        centeredContent: {
+            alignItems: 'center',
+            padding: 16,
+        },
+        editForm: {
+            marginTop: 8,
+        },
+        appVersion: {
+            fontSize: 16,
+            fontWeight: 'bold',
+            textAlign: 'center',
+        },
+        appInfo: {
+            fontSize: 14,
+            color: '#666',
+            textAlign: 'center',
+            marginTop: 8,
+        },
+        bottomPadding: {
+            height: 40,
+        },
+    });
 
     useEffect(() => {
         fetchUserData();
@@ -166,9 +249,7 @@ export default function SettingsScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Settings</Text>
-            </View>
+            <Header title="Settings" />
 
             <ScrollView style={styles.container}>
                 {/* Profile Section */}
@@ -343,92 +424,3 @@ export default function SettingsScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    container: {
-        flex: 1,
-        padding: 16,
-    },
-    card: {
-        marginBottom: 16,
-        elevation: 2,
-    },
-    profileHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    profileInfo: {
-        marginLeft: 16,
-        flex: 1,
-    },
-    profileName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    profileEmail: {
-        fontSize: 14,
-        color: '#666',
-    },
-    profileRole: {
-        fontSize: 14,
-        color: '#2196F3',
-        fontWeight: '500',
-    },
-    divider: {
-        marginVertical: 12,
-    },
-    input: {
-        marginBottom: 12,
-    },
-    buttonRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 8,
-    },
-    cancelButton: {
-        marginRight: 12,
-    },
-    saveButton: {
-        marginTop: 16,
-    },
-    logoutButton: {
-        backgroundColor: '#F44336',
-    },
-    centeredContent: {
-        alignItems: 'center',
-        padding: 16,
-    },
-    editForm: {
-        marginTop: 8,
-    },
-    appVersion: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    appInfo: {
-        fontSize: 14,
-        color: '#666',
-        textAlign: 'center',
-        marginTop: 8,
-    },
-    bottomPadding: {
-        height: 40,
-    },
-});

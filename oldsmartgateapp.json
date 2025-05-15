@@ -1,0 +1,36 @@
+{
+    "rules": {
+        "gates": {
+            "main-gate": {
+                "command": {
+                    ".read": "auth != null || data.child('triggeredBy').val() == 'ANPR'",
+                    ".write": "auth != null || newData.child('triggeredBy').val() == 'ANPR'"
+                },
+                "status": {
+                    ".read": "auth != null",
+                    ".write": "auth != null"
+                }
+            }
+        },
+        "licensePlates": {
+            ".read": "auth != null || true",
+            ".write": "auth != null",
+            "$plateId": {
+                ".validate": "newData.hasChildren(['plateNumber', 'ownerName', 'allowed'])"
+            }
+        },
+        "logs": {
+            ".read": "auth != null",
+            ".write": "auth != null || newData.child('userId').val() == 'ANPR'",
+            ".indexOn": [
+                "timestamp"
+            ]
+        },
+        "users": {
+            "$uid": {
+                ".read": "auth != null && auth.uid == $uid",
+                ".write": "auth != null && auth.uid == $uid"
+            }
+        }
+    }
+}

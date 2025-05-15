@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { TextInput, Button, Text, HelperText } from 'react-native-paper';
+import { View, StyleSheet, Text } from 'react-native';
+import { TextInput, Button, HelperText } from 'react-native-paper';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../src/firebaseConfig';
 import { Link, useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Colors } from '../constants/Colors';
+import { useColorScheme } from '../hooks/useColorScheme';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -52,78 +55,101 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Smart Gate App</Text>
-      <Text style={styles.subtitle}>Sign in to continue</Text>
+    <LinearGradient
+      colors={[Colors.light.primary, Colors.light.secondary]}
+      style={styles.container}
+    >
+      <View style={styles.innerContainer}>
+        <Text style={styles.title}>Log In</Text>
 
-      <TextInput
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        mode="outlined"
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-        accessibilityLabel="Email input"
-        accessibilityHint="Enter your email address"
-      />
-      {email.length > 0 && !validateEmail(email) && (
-        <HelperText type="error" visible={true}>
-          Please enter a valid email address
-        </HelperText>
-      )}
+        <TextInput
+          label="Enter your email address"
+          value={email}
+          onChangeText={setEmail}
+          mode="outlined"
+          style={styles.input}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          accessibilityLabel="Email input"
+          accessibilityHint="Enter your email address"
+          theme={{ colors: { primary: '#fff', text: '#fff', placeholder: '#fff' } }}
+          outlineColor="rgba(255, 255, 255, 0.3)"
+          textColor="#fff"
+        />
 
-      <TextInput
-        label="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        mode="outlined"
-        style={styles.input}
-        accessibilityLabel="Password input"
-        accessibilityHint="Enter your password"
-      />
+        {email.length > 0 && !validateEmail(email) && (
+          <HelperText type="error" style={styles.helperText}>
+            Please enter a valid email address
+          </HelperText>
+        )}
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+        <TextInput
+          label="Enter your password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          mode="outlined"
+          style={styles.input}
+          accessibilityLabel="Password input"
+          accessibilityHint="Enter your password"
+          theme={{ colors: { primary: '#fff', text: '#fff', placeholder: '#fff' } }}
+          outlineColor="rgba(255, 255, 255, 0.3)"
+          textColor="#fff"
+        />
 
-      <Button
-        mode="contained"
-        onPress={handleLogin}
-        loading={loading}
-        disabled={loading || !isFormValid()}
-        style={styles.button}
-      >
-        Login
-      </Button>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <Link href="/forgot-password" style={styles.forgotLink}>
-        <Text style={styles.forgotText}>Forgot Password?</Text>
-      </Link>
+        <Button
+          mode="contained"
+          onPress={handleLogin}
+          loading={loading}
+          disabled={loading || !isFormValid()}
+          style={styles.button}
+          labelStyle={styles.buttonText}
+        >
+          Log In
+        </Button>
 
-      <View style={styles.registerContainer}>
-        <Text>Don't have an account? </Text>
-        <Link href="/register" style={styles.registerLink}>
-          <Text style={styles.registerText}>Register</Text>
+        <Link href="/forgot-password" style={styles.forgotLink}>
+          <Text style={styles.forgotText}>Forgot Password?</Text>
         </Link>
+
+        <View style={styles.registerContainer}>
+          <Text style={styles.registerText}>Don't have an account? </Text>
+          <Link href="/register" style={styles.registerLink}>
+            <Text style={styles.registerLinkText}>Sign up</Text>
+          </Link>
+        </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'center',
+  },
+  innerContainer: {
     padding: 24,
     justifyContent: 'center',
-    backgroundColor: '#f5f5f5', // Light background for polish
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 24,
     textAlign: 'center',
-    color: '#333',
+    color: Colors.light.text, // Use text color for dark mode compatibility
+  },
+  input: {
+    marginBottom: 16,
+    backgroundColor: 'transparent',
+    borderRadius: 10,
+  },
+  helperText: {
+    color: Colors.light.text,
+    opacity: 0.8,
   },
   subtitle: {
     fontSize: 16,
@@ -131,26 +157,28 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#666',
   },
-  input: {
-    marginBottom: 16,
-    backgroundColor: '#fff',
-  },
   error: {
-    color: '#d32f2f',
+    color: Colors.light.text,
     marginBottom: 16,
     textAlign: 'center',
   },
   button: {
     marginTop: 16,
-    paddingVertical: 4,
-    backgroundColor: '#6200ee', // Consistent with Material Design
+    paddingVertical: 8,
+    backgroundColor: Colors.light.primary,
+    borderRadius: 25,
+  },
+  buttonText: {
+    color: Colors.light.text,
+    fontWeight: 'bold',
+    fontSize: 16, // Added font size for button text
   },
   forgotLink: {
     marginTop: 12,
     alignSelf: 'center',
   },
   forgotText: {
-    color: '#2196F3',
+    color: Colors.light.text,
     fontSize: 14,
   },
   registerContainer: {
@@ -159,8 +187,17 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   registerText: {
-    color: '#2196F3',
+    color: Colors.light.text,
+    fontSize: 16,
+  },
+  registerLinkText: {
+    color: Colors.light.text,
+    fontSize: 16,
     fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
+  registerLink: {
+    marginLeft: 4,
   },
 });
 

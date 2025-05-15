@@ -4,8 +4,14 @@ import { Text, Card, List, ActivityIndicator, Avatar, Chip, Searchbar, Menu, But
 import { ref, query, orderByChild, limitToLast, get } from 'firebase/database';
 import { database } from '../../src/firebaseConfig';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Header from '../../components/ui/header';
+import { Colors } from '../../constants/Colors';
+import { useColorScheme } from '../../hooks/useColorScheme';
+
+
 
 export default function LogsScreen() {
+    const colorScheme = useColorScheme();
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -14,6 +20,69 @@ export default function LogsScreen() {
     const [activeFilter, setActiveFilter] = useState('all');
     const [dateMenuVisible, setDateMenuVisible] = useState(false);
     const [dateFilter, setDateFilter] = useState('all');
+
+    const styles = StyleSheet.create({
+        safeArea: {
+            flex: 1,
+            backgroundColor: Colors[colorScheme].background,
+        },
+        container: {
+            flex: 1,
+            padding: 16,
+            backgroundColor: Colors[colorScheme].background,
+        },
+        searchBar: {
+            marginBottom: 10,
+            backgroundColor: '#FFFFFF',
+            borderRadius: 10,
+            elevation: 2,
+        },
+        filterRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 10,
+        },
+        chipContainer: {
+            flexDirection: 'row',
+        },
+        chip: {
+            marginRight: 8,
+            backgroundColor: '#E0E0E0',
+        },
+        dateButton: {
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: '#6200EE',
+            paddingHorizontal: 10,
+        },
+        logsCard: {
+            flex: 1,
+            backgroundColor: Colors[colorScheme].card,
+            borderRadius: 12,
+            padding: 10,
+            elevation: 3,
+        },
+        logsContent: {
+            padding: 10,
+        },
+        logUser: {
+            fontSize: 14,
+            fontWeight: 'bold',
+            color: '#555',
+        },
+        loading: {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        noLogsText: {
+            textAlign: 'center',
+            fontSize: 16,
+            color: Colors[colorScheme].text,
+            marginTop: 20,
+        },
+    })
 
     const fetchLogs = async () => {
         setLoading(true);
@@ -135,9 +204,7 @@ export default function LogsScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Activity Logs</Text>
-            </View>
+            <Header title="Activity Logs" />
 
             <View style={styles.container}>
                 <Searchbar
@@ -237,78 +304,5 @@ export default function LogsScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: '#F8F9FA',
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    container: {
-        flex: 1,
-        padding: 16,
-    },
-    searchBar: {
-        marginBottom: 10,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 10,
-        elevation: 2,
-    },
-    filterRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    chipContainer: {
-        flexDirection: 'row',
-    },
-    chip: {
-        marginRight: 8,
-        backgroundColor: '#E0E0E0',
-    },
-    dateButton: {
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#6200EE',
-        paddingHorizontal: 10,
-    },
-    logsCard: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 10,
-        elevation: 3,
-    },
-    logsContent: {
-        padding: 10,
-    },
-    logUser: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#555',
-    },
-    loading: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    noLogsText: {
-        textAlign: 'center',
-        fontSize: 16,
-        color: '#888',
-        marginTop: 20,
-    },
-})
+
+

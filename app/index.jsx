@@ -1,8 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { PanGestureHandler } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 import { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import { LinearGradient } from 'expo-linear-gradient';
+import { Colors } from '../constants/Colors';
+import { useColorScheme } from '../hooks/useColorScheme';
 
 export default function LandingScreen() {
     const router = useRouter();
@@ -24,24 +27,35 @@ export default function LandingScreen() {
         transform: [{ translateY: translateY.value }]
     }));
 
+    const handleGetStarted = () => {
+        router.replace('/login')
+    }
+
     return (
-        <View style={styles.container}>
+        <LinearGradient
+            colors={[Colors.light.primary, Colors.light.secondary]}
+            style={styles.container}
+        >
             <PanGestureHandler onGestureEvent={onGestureEvent} onEnded={onHandlerStateChange}>
                 <Animated.View style={[styles.content, animatedStyle]}>
-                    <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.logo} />
-                    <Text style={styles.title}> Welcome to Smart Gate App</Text>
-                    <Text style={styles.subtitle}>Swipe up to get started</Text>
+                    <View style={styles.circle} /> {/* Orange Circle Background */}
+                    <Text style={styles.title}>Smart Gate</Text> {/* Title */}
+                    <Text style={styles.subtitle}>
+                        Welcome to Smart-Gate –{"\n"}Seamless, Secure, & Smart{"\n"}Access At Your Fingertips.
+                    </Text>
+                    <TouchableOpacity style={styles.button} onPress={handleGetStarted}>
+                        <Text style={styles.buttonText}>Get Started</Text>
+                    </TouchableOpacity>
                 </Animated.View>
             </PanGestureHandler>
-        </View>
-    )
+        </LinearGradient>
+    );
 }
 
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#6200ee', // A vibrant background
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -49,20 +63,39 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 20,
     },
-    logo: {
-        width: 150,
-        height: 150,
-        marginBottom: 20,
+    circle: {
+        position: 'absolute',
+        top: -200, // Adjust to position the circle partially off-screen
+        left: -100,
+        width: 400,
+        height: 400,
+        backgroundColor: Colors.light.primary,
+        borderRadius: 200, // Make it a circle
+        opacity: 0.5, // Slight transparency
     },
     title: {
-        fontSize: 32,
+        fontSize: 48, // Larger font for "Smart Gate"
         fontWeight: 'bold',
-        color: '#fff',
+        color: Colors.light.text,
         marginBottom: 10,
+        textAlign: 'center',
     },
     subtitle: {
+        fontSize: 16,
+        color: Colors.light.text,
+        textAlign: 'center',
+        marginBottom: 30,
+        lineHeight: 24, // Adjust line spacing for better readability
+    },
+    button: {
+        backgroundColor: Colors.light.primary,
+        paddingVertical: 15,
+        paddingHorizontal: 40,
+        borderRadius: 25, // Rounded corners
+    },
+    buttonText: {
         fontSize: 18,
-        color: '#fff',
-        opacity: 0.8,
+        color: Colors.light.text,
+        fontWeight: 'bold',
     },
 });

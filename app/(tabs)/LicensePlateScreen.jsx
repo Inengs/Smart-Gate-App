@@ -8,8 +8,26 @@ import {
 import { ref, set, remove, onValue, query, orderByChild } from 'firebase/database';
 import { database, auth } from '../../src/firebaseConfig';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Header from '../../components/ui/header';
+import { Colors } from '../../constants/Colors';
+import { useColorScheme } from '../../hooks/useColorScheme';
+
+
+
+const retryOperation = async (operation, maxAttempts = 3) => {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            await operation();
+            return;
+        } catch (error) {
+            if (attempt === maxAttempts) throw error;
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+    }
+};
 
 export default function LicensePlateScreen() {
+    const colorScheme = useColorScheme();
     const [licensePlates, setLicensePlates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [dialogVisible, setDialogVisible] = useState(false);
@@ -20,6 +38,57 @@ export default function LicensePlateScreen() {
     const [currentPlateId, setCurrentPlateId] = useState(null);
     const [operationLoading, setOperationLoading] = useState(false);
 
+    const styles = StyleSheet.create({
+        safeArea: {
+            flex: 1,
+            backgroundColor: Colors[colorScheme].background,
+        },
+        container: {
+            flex: 1,
+            padding: 16,
+            backgroundColor: Colors[colorScheme].background,
+        },
+        searchBar: {
+            marginBottom: 16,
+            backgroundColor: Colors[colorScheme].card,
+            elevation: 4,
+        },
+        plateListCard: {
+            flex: 1,
+            marginBottom: 16,
+            backgroundColor: Colors[colorScheme].card,
+        },
+        plateListContent: {
+            paddingHorizontal: 0,
+        },
+        plateActions: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        noPlatesText: {
+            textAlign: 'center',
+            marginVertical: 20,
+            color: Colors[colorScheme].text,
+            opacity: 0.7,
+        },
+        loading: {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        dialogInput: {
+            marginBottom: 16,
+            backgroundColor: Colors[colorScheme].card,
+        },
+        fab: {
+            position: 'absolute',
+            margin: 16,
+            right: 0,
+            bottom: 0,
+            backgroundColor: Colors[colorScheme].primary,
+        },
+    });
+
     useEffect(() => {
         if (!auth.currentUser) {
             Alert.alert("Error", "You must be logged in to view license plates");
@@ -29,23 +98,28 @@ export default function LicensePlateScreen() {
 
         const licensePlatesRef = query(ref(database, 'licensePlates'), orderByChild('plateNumber'));
         const unsubscribe = onValue(licensePlatesRef, (snapshot) => {
-            console.log("Listener triggered at:", new Date().toISOString());
-            console.log("Snapshot exists:", snapshot.exists());
-            console.log("Raw data:", snapshot.val());
-            setLoading(true);
-            const platesData = [];
-            if (snapshot.exists()) {
-                snapshot.forEach((childSnapshot) => {
-                    platesData.push({ id: childSnapshot.key, ...childSnapshot.val() });
-                });
+            try {
+                const platesData = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const plate = childSnapshot.val();
+                        platesData.push({
+                            id: childSnapshot.key,
+                            plateNumber: plate.plateNumber || '',
+                            ownerName: plate.ownerName || '',
+                            allowed: plate.allowed !== undefined ? plate.allowed : true
+                        });
+                    });
+                }
+                setLicensePlates(platesData);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error processing license plates:", error);
+                Alert.alert("Error", "Failed to load license plates");
+                setLoading(false);
             }
-            console.log("Processed plates:", platesData);
-            setLicensePlates(platesData);
-            setLoading(false);
-        }, (error) => {
-            console.error("Error fetching license plates:", error);
-            setLoading(false);
-            Alert.alert("Error", `Failed to load license plates: ${error.message}`);
+        }, {
+            onlyOnce: false
         });
 
         return () => unsubscribe();
@@ -55,8 +129,6 @@ export default function LicensePlateScreen() {
         plate.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
         plate.ownerName.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    console.log("searchQuery:", searchQuery);
-    console.log("filteredPlates:", filteredPlates);
 
     const saveLicensePlate = async () => {
         if (operationLoading) return;
@@ -78,20 +150,21 @@ export default function LicensePlateScreen() {
 
         setOperationLoading(true);
         try {
-            const plateId = isEditing ? currentPlateId : normalizedPlate; // Use plate number as ID for simplicity
-            console.log("Saving Plate:", { plateId, normalizedPlate, ownerName });
+            const plateId = isEditing ? currentPlateId : normalizedPlate.replace(/[^a-zA-Z0-9]/g, ''); // Sanitize for Firebase key
             const existingPlateData = licensePlates.find(p => p.id === plateId);
 
-            await set(ref(database, `licensePlates/${plateId}`), {
-                plateNumber: normalizedPlate,
-                ownerName: ownerName.trim(),
-                allowed: true, // Default to allowed for ANPR
-                createdAt: isEditing ? (existingPlateData?.createdAt || Date.now()) : Date.now(),
-                updatedAt: Date.now(),
-                ownerUid: auth.currentUser.uid,
+            await retryOperation(async () => {
+                await set(ref(database, `licensePlates/${plateId}`), {
+                    plateNumber: normalizedPlate,
+                    ownerName: ownerName.trim(),
+                    allowed: true,
+                    createdAt: isEditing ? (existingPlateData?.createdAt || Date.now()) : Date.now(),
+                    updatedAt: Date.now(),
+                    ownerUid: auth.currentUser.uid
+                });
             });
 
-            console.log("Plate Saved Successfully")
+
             resetForm();
             setDialogVisible(false);
             Alert.alert(isEditing ? "Plate Updated" : "Plate Added", `License plate ${normalizedPlate} has been ${isEditing ? 'updated' : 'added'}`);
@@ -121,22 +194,12 @@ export default function LicensePlateScreen() {
                     onPress: async () => {
                         setOperationLoading(true);
                         try {
-                            // Check if the user is the owner of this plate
                             const plateToDelete = licensePlates.find(p => p.id === plateId);
                             if (!plateToDelete) {
                                 throw new Error("License plate not found");
                             }
 
-                            // if (plateToDelete.ownerUid && plateToDelete.ownerUid !== auth.currentUser.uid) {
-                            //     throw new Error("You can only delete license plates you've created");
-                            // }
-
-                            console.log(`Attempting to delete plate ID: ${plateId}`);
                             await remove(ref(database, `licensePlates/${plateId}`));
-                            console.log("Delete operation completed");
-
-                            setLicensePlates(prevPlates => prevPlates.filter(p => p.id !== plateId));
-
                             Alert.alert("Success", "License plate deleted successfully");
                         } catch (error) {
                             console.error("Error deleting license plate:", error);
@@ -144,8 +207,8 @@ export default function LicensePlateScreen() {
                         } finally {
                             setOperationLoading(false);
                         }
-                    },
-                },
+                    }
+                }
             ]
         );
     };
@@ -184,9 +247,7 @@ export default function LicensePlateScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>License Plate Management</Text>
-            </View>
+            <Header title="License Plate Management" />
 
             <View style={styles.container}>
                 <Searchbar
@@ -265,27 +326,5 @@ export default function LicensePlateScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    safeArea: { flex: 1 },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
-    },
-    headerTitle: { fontSize: 20, fontWeight: 'bold' },
-    container: { flex: 1, padding: 16 },
-    searchBar: { marginBottom: 16, elevation: 4 },
-    plateListCard: { flex: 1, marginBottom: 16 },
-    plateListContent: { paddingHorizontal: 0 },
-    plateActions: { flexDirection: 'row', alignItems: 'center' },
-    noPlatesText: { textAlign: 'center', marginVertical: 20, color: '#757575' },
-    loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    dialogInput: { marginBottom: 16 },
-    fab: { position: 'absolute', margin: 16, right: 0, bottom: 0, backgroundColor: '#2196F3' },
-});
 
 

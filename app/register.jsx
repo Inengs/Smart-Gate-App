@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { TextInput, Button, Text, HelperText } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import { TextInput, Button, HelperText } from 'react-native-paper';
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { ref, set } from 'firebase/database';
 import { auth, database } from '../src/firebaseConfig';
 import { Link } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Register() {
     const [name, setName] = useState('');
@@ -78,130 +79,183 @@ export default function Register() {
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-            <View style={styles.container}>
-                <Text style={styles.title}>Create Account</Text>
-                <Text style={styles.subtitle}>Smart Gate App</Text>
+        <LinearGradient
+            colors={['#F5A623', 'D88C1A']} // Gradient from light to darker range
+            style={styles.container}
+        >
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <View style={styles.innerContainer}>
+                    <Text style={styles.title}>WELCOME ONBOARD!</Text>
 
-                <TextInput
-                    label="Full Name"
-                    value={name}
-                    onChangeText={setName}
-                    mode="outlined"
-                    style={styles.input}
-                    accessibilityLabel="Full Name input"
-                    accessibilityHint="Enter your full name"
-                />
+                    <TextInput
+                        label="Enter your username"
+                        value={name}
+                        onChangeText={setName}
+                        mode="outlined"
+                        style={styles.input}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        accessibilityLabel="UserName input"
+                        accessibilityHint="Enter your username"
+                        theme={{ colors: { primary: '#fff', text: '#fff', placeholder: '#fff', onSurfaceVariant: '#fff' }, roundness: 10, }}
+                        outlineColor="rgba(255, 255, 255, 0.3)"
+                        activeOutlineColor='#fff'
+                        textColor="#fff"
+                        labelStyle={styles.labelStyle}
+                    />
 
-                <TextInput
-                    label="Email"
-                    value={email}
-                    onChangeText={setEmail}
-                    mode="outlined"
-                    style={styles.input}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    accessibilityLabel="Email input"
-                    accessibilityHint="Enter your email address"
-                />
-                {email.length > 0 && !validateEmail(email) && (
-                    <HelperText type="error">Invalid email address</HelperText>
-                )}
+                    <TextInput
+                        label="Enter your email address"
+                        value={email}
+                        onChangeText={setEmail}
+                        mode="outlined"
+                        style={styles.input}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        accessibilityLabel="Email input"
+                        accessibilityHint="Enter your email address"
+                        theme={{ colors: { primary: '#fff', text: '#fff', placeholder: '#fff', onSurfaceVariant: '#fff' }, roundness: 10, }}
+                        outlineColor="rgba(255, 255, 255, 0.3)"
+                        activeOutlineColor="#fff"
+                        textColor="#fff"
+                        labelStyle={styles.labelStyle}
+                    />
 
-                <TextInput
-                    label="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    mode="outlined"
-                    style={styles.input}
-                    accessibilityLabel="Password input"
-                    accessibilityHint="Enter your password"
-                />
-                {password.length > 0 && !validatePassword(password) && (
-                    <HelperText type="error">Password must be 6+ characters</HelperText>
-                )}
+                    {email.length > 0 && !validateEmail(email) && (
+                        <HelperText type="error" style={styles.helperText}>Invalid email address</HelperText>
+                    )}
 
-                <TextInput
-                    label="Confirm Password"
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    secureTextEntry
-                    mode="outlined"
-                    style={styles.input}
-                    accessibilityLabel="Confirm Password input"
-                    accessibilityHint="Re-enter your password"
-                />
-                {confirmPassword.length > 0 && password !== confirmPassword && (
-                    <HelperText type="error">Passwords do not match</HelperText>
-                )}
+                    <TextInput
+                        label="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry
+                        mode="outlined"
+                        style={styles.input}
+                        accessibilityLabel="Password input"
+                        accessibilityHint="Enter your password"
+                        theme={{ colors: { primary: '#fff', text: '#fff', placeholder: '#fff', onSurfaceVariant: '#fff' }, roundness: 10, }}
+                        outlineColor="rgba(255, 255, 255, 0.3)"
+                        activeOutlineColor='#fff'
+                        textColor="#fff"
+                        labelStyle={styles.labelStyle}
+                    />
 
-                {error ? <Text style={styles.error}>{error}</Text> : null}
-                {success ? <Text style={styles.success}>{success}</Text> : null}
+                    {password.length > 0 && !validatePassword(password) && (
+                        <HelperText type="error" style={styles.helperText}>Password must be 6+ characters</HelperText>
+                    )}
 
-                <Button
-                    mode="contained"
-                    onPress={handleRegister}
-                    loading={loading}
-                    disabled={loading || !isFormValid()}
-                    style={styles.button}
-                >
-                    Register
-                </Button>
+                    <TextInput
+                        label="Confirm password"
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        secureTextEntry
+                        mode="outlined"
+                        style={styles.input}
+                        accessibilityLabel="Confirm Password input"
+                        accessibilityHint="Re-enter your password"
+                        theme={{ colors: { primary: '#fff', text: '#fff', placeholder: '#fff', onSurfaceVariant: '#fff' }, roundness: 10, }}
+                        outlineColor="rgba(255, 255, 255, 0.3)"
+                        activeOutlineColor='#fff'
+                        textColor="#fff"
+                        labelStyle={styles.labelStyle}
+                    />
 
-                <View style={styles.loginContainer}>
-                    <Text>Already have an account? </Text>
-                    <Link href="/login" style={styles.loginLink}>
-                        <Text style={styles.loginText}>Login</Text>
-                    </Link>
+                    {confirmPassword.length > 0 && password !== confirmPassword && (
+                        <HelperText type="error" style={styles.helperText}>Passwords do not match</HelperText>
+                    )}
+
+                    <Text style={styles.passwordNote}>
+                        Password must be 6+ characters
+                    </Text>
+
+                    {error ? <Text style={styles.error}>{error}</Text> : null}
+                    {success ? <Text style={styles.success}>{success}</Text> : null}
+
+                    <Button
+                        mode="contained"
+                        onPress={handleRegister}
+                        loading={loading}
+                        disabled={loading || !isFormValid()}
+                        style={styles.button}
+                        labelStyle={styles.buttonText}
+                    >
+                        SIGN UP
+                    </Button>
+
+                    <View style={styles.loginContainer}>
+                        <Text style={styles.loginText}>Already have an account? </Text>
+                        <Link href="/login" style={styles.loginLink}>
+                            <Text style={styles.loginLinkText}>Log In</Text>
+                        </Link>
+                    </View>
                 </View>
-            </View>
-        </ScrollView>
+            </ScrollView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
-    scrollContainer: {
-        flexGrow: 1,
-    },
     container: {
         flex: 1,
+    },
+    scrollContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+    },
+    innerContainer: {
         padding: 24,
         justifyContent: 'center',
-        backgroundColor: '#f5f5f5',
     },
     title: {
         fontSize: 28,
         fontWeight: 'bold',
-        marginBottom: 8,
-        textAlign: 'center',
-        color: '#333',
-    },
-    subtitle: {
-        fontSize: 16,
         marginBottom: 24,
         textAlign: 'center',
-        color: '#666',
+        color: '#fff',
     },
     input: {
         marginBottom: 12,
-        backgroundColor: '#fff',
+        backgroundColor: 'transparent',
+        borderRadius: 10,
+    },
+    labelStyle: {
+        // Adjust the label's position when floating
+        top: -8, // Move the label higher when floating to avoid the border
+        fontSize: 12, // Smaller font size when floating
+    },
+    helperText: {
+        color: '#fff',
+        opacity: 0.8,
+    },
+    passwordNote: {
+        fontSize: 12,
+        color: '#fff',
+        opacity: 0.7,
+        textAlign: 'center',
+        marginBottom: 16,
     },
     error: {
-        color: '#d32f2f',
+        color: '#fff',
         marginBottom: 16,
         textAlign: 'center',
     },
     success: {
-        color: '#2e7d32',
+        color: '#fff',
         marginBottom: 16,
         textAlign: 'center',
     },
     button: {
         marginTop: 16,
         paddingVertical: 8,
-        backgroundColor: '#6200ee',
+        backgroundColor: '#F5A623', // Orange button
+        borderRadius: 25,
+    },
+    buttonText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#fff',
     },
     loginContainer: {
         flexDirection: 'row',
@@ -209,8 +263,17 @@ const styles = StyleSheet.create({
         marginTop: 24,
     },
     loginText: {
-        color: '#2196F3',
+        color: '#fff',
+        fontSize: 16,
+    },
+    loginLink: {
+        marginLeft: 4,
+    },
+    loginLinkText: {
+        color: '#fff',
+        fontSize: 16,
         fontWeight: 'bold',
+        textDecorationLine: 'underline',
     },
 });
 
